@@ -7,7 +7,7 @@
         path: '/user',
         routes: [
           {
-            name: 'login',
+            name: '登录',
             path: '/user/login',
             component: './User/login',
           },
@@ -17,30 +17,15 @@
   },
   {
     path: '/welcome',
-    name: 'welcome',
+    name: '欢迎',
     icon: 'smile',
     component: './Welcome',
   },
   {
-    path: '/admin',
-    name: 'admin',
-    icon: 'crown',
-    access: 'canAdmin',
-    component: './Admin',
-    routes: [
-      {
-        path: '/admin/sub-page',
-        name: 'sub-page',
-        icon: 'smile',
-        component: './Welcome',
-      },
-    ],
-  },
-  {
-    name: 'list.table-list',
+    path: '/context-table',
+    name: '文章管理',
     icon: 'table',
-    path: '/list',
-    component: './TableList',
+    component: './ContextInfo',
   },
   {
     path: '/',

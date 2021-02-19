@@ -389,13 +389,13 @@
       "LoginResult": {
         "type": "object",
         "properties": {
-          "status": {
+          "state": {
+            "type": "number"
+          },
+          "token": {
             "type": "string"
           },
-          "type": {
-            "type": "string"
-          },
-          "currentAuthority": {
+          "info": {
             "type": "string"
           }
         }

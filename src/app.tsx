@@ -8,7 +8,6 @@ import RightContent from '@/components/RightContent';
 import Footer from '@/components/Footer';
 import type { ResponseError } from 'umi-request';
 import { currentUser as queryCurrentUser } from './services/ant-design-pro/api';
-import { BookOutlined, LinkOutlined } from '@ant-design/icons';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -62,30 +61,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
         history.push('/user/login');
       }
     },
-    links: isDev
-      ? [
-          <>
-            <LinkOutlined />
-            <span
-              onClick={() => {
-                window.open('/umi/plugin/openapi');
-              }}
-            >
-              openAPI 文档
-            </span>
-          </>,
-          <>
-            <BookOutlined />
-            <span
-              onClick={() => {
-                window.open('/~docs');
-              }}
-            >
-              业务组件文档
-            </span>
-          </>,
-        ]
-      : [],
+    links: isDev ? [<></>] : [],
     menuHeaderRender: undefined,
     // 自定义 403 页面
     // unAccessible: <div>unAccessible</div>,
@@ -138,5 +114,29 @@ const errorHandler = (error: ResponseError) => {
 
 // https://umijs.org/zh-CN/plugins/plugin-request
 export const request: RequestConfig = {
+  prefix: '/BlogDev/Data/',
+  // requestInterceptors: [
+  //   (url, options) => {
+  //     // const appId = 'bic';
+  //     // const token = 'B2791226EE6F63E29D06C50A2570F4ED';
+  //     // const businessDate = '2021-01-01';
+  //     // const storeId = 101035;
+  //     return {
+  //       options: {
+  //         ...options,
+  //         // params: { appId, token, businessDate, storeId, ...options.params },
+  //       },
+  //     };
+  //   },
+  // ],
+  // errorConfig: {
+  //   adaptor: (resData) => {
+  //     return {
+  //       ...resData,
+  //       success: resData.code === '0',
+  //       errorMessage: resData.msg,
+  //     };
+  //   },
+  // },
   errorHandler,
 };

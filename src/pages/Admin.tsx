@@ -17,7 +17,7 @@ export default (): React.ReactNode => {
         <Alert
           message={intl.formatMessage({
             id: 'pages.welcome.alertMessage',
-            defaultMessage: '更快更强的重型组件，已经发布。',
+            defaultMessage: '欢迎使用WCM-后台管理系统',
           })}
           type="success"
           showIcon

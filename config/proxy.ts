@@ -7,8 +7,8 @@
  */
 export default {
   dev: {
-    '/api/': {
-      target: 'https://preview.pro.ant.design',
+    '/BlogDev/Data/': {
+      target: 'http://49.234.86.61:8000',
       changeOrigin: true,
       pathRewrite: { '^': '' },
     },

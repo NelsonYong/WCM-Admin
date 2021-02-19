@@ -2,6 +2,11 @@
 /* eslint-disable */
 
 declare namespace API {
+  export type Basis<T = any> = {
+    code: number;
+    data: T;
+    msg?: string;
+  };
   type CurrentUser = {
     name?: string;
     avatar?: string;
@@ -24,9 +29,9 @@ declare namespace API {
   };
 
   type LoginResult = {
-    status?: string;
-    type?: string;
-    currentAuthority?: string;
+    state?: number;
+    info?: string;
+    token?: string;
   };
 
   type PageParams = {
@@ -62,10 +67,7 @@ declare namespace API {
   };
 
   type LoginParams = {
-    username?: string;
-    password?: string;
-    autoLogin?: boolean;
-    type?: string;
+    user: { id: number; password: number };
   };
 
   type ErrorResponse = {

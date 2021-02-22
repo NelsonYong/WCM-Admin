@@ -5,4 +5,8 @@ module.exports = {
     page: true,
     REACT_APP_ENV: true,
   },
+  rules: {
+    // 这一行代码就是允许console.log 设置
+    'no-console': 'off',
+  },
 };

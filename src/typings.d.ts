@@ -31,6 +31,7 @@ type Window = {
 };
 
 declare let ga: () => void;
+// declare module 'umi';
 
 // preview.pro.ant.design only do not use in your production ;
 // preview.pro.ant.design 专用环境变量，请不要在你的项目中使用它。

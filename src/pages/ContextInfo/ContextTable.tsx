@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Space, Typography, Divider } from 'antd';
+import { Table, Typography, Popconfirm, message } from 'antd';
 import { request } from 'umi';
 import { useRequest } from 'ahooks';
 import ModelTags from './ModelTags';
@@ -26,25 +26,61 @@ type ContextInfo = {
 };
 
 async function getContext(pageCurrent = 1) {
-  return request<ContextInfo[]>('SearchText.php', {
+  return request<API.Basis<ContextInfo[]>>('/Context/SearchText.php', {
     skipErrorHandler: true,
     method: 'get',
     params: { page: pageCurrent },
   });
 }
 
+/**
+ * 删除文章
+ */
+async function deleteContext(id: string | number) {
+  return request<API.Basis>('/Mean/deleteContext.php', {
+    skipErrorHandler: true,
+    method: 'get',
+    params: {
+      id,
+    },
+  });
+}
+
 export default function UserTable() {
   const [isShow, setIsShow] = useState<boolean>(false);
   const [pageCurrent, setPageCurrent] = useState<number>(1);
-  const { data } = useRequest(() => getContext(pageCurrent), {
+  const [textData, setTextData] = useState<ContextInfo[]>();
+
+  const { run: getRun } = useRequest(() => getContext(pageCurrent), {
     refreshDeps: [pageCurrent],
-    formatResult: (res) => {
-      return res;
+    formatResult: ({ data, code, msg }) => {
+      if (code === 0) setTextData(data);
+      else message.error(msg);
+    },
+  });
+
+  const { run: deleteRun } = useRequest(deleteContext, {
+    formatResult: ({ code, msg }) => {
+      if (code === 0) {
+        getRun();
+        message.success(msg);
+      } else message.error(msg);
     },
   });
 
   const ChangePage = (page: number) => {
     setPageCurrent(page);
+  };
+
+  const handleDelete = (id: React.Key) => {
+    if (textData) {
+      // const { id } = textData?.filter((item) => {
+      //   return item.id === key;
+      // })[0];
+      deleteRun(id);
+    } else {
+      console.log('删除错误');
+    }
   };
 
   const showModal = (flag?: boolean) => {
@@ -81,11 +117,10 @@ export default function UserTable() {
       title: '操作',
       key: 'action',
       width: '10%',
-      render: () => (
-        <Space split={<Divider type="vertical" />} size="middle">
-          <Typography.Link>编辑</Typography.Link>
+      render: (_: any, record: { key: React.Key }) => (
+        <Popconfirm title="确定删除?" onConfirm={() => handleDelete(record.key)}>
           <Typography.Link>删除</Typography.Link>
-        </Space>
+        </Popconfirm>
       ),
     },
   ];
@@ -95,9 +130,9 @@ export default function UserTable() {
       <ModelTags title={'详情信息'} isShow={isShow} showModal={showModal} />
       <Table
         columns={columns}
-        dataSource={data ?? []}
+        dataSource={textData ?? []}
         pagination={{
-          total: data?.[0]?.allCount ?? 0,
+          total: textData?.[0]?.allCount ?? 0,
           pageSize: 10,
           current: pageCurrent,
           onChange: ChangePage,

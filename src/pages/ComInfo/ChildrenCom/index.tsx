@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Space, Button } from 'antd';
+import { Table, Space, Divider, Typography } from 'antd';
 import { request } from 'umi';
 import { useRequest } from 'ahooks';
 import { NoToBase64 } from '@/common/utils';
@@ -27,7 +27,7 @@ const PAGE_SIZE = 10;
  */
 
 async function getComment(pageCurrent = 1) {
-  return request<MainComment[]>('getChildrenComment.php', {
+  return request<MainComment[]>('/Comment/getChildrenComment.php', {
     skipErrorHandler: true,
     method: 'get',
     params: {
@@ -86,8 +86,8 @@ const ChildrenCom = () => {
       title: '操作',
       key: 'action',
       render: () => (
-        <Space size="middle">
-          <Button type="default">删除</Button>
+        <Space split={<Divider type="vertical" />} size="middle">
+          <Typography.Link>删除</Typography.Link>
         </Space>
       ),
     },

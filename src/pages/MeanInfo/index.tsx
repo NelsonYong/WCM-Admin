@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Space, Button } from 'antd';
+import { Table, Space, Typography, Popconfirm, message } from 'antd';
 import { request } from 'umi';
 import { useRequest } from 'ahooks';
 import Search from 'antd/lib/input/Search';
@@ -12,6 +12,7 @@ type Columns = {
 };
 
 type Mean = {
+  id: string;
   userid: string;
   title: string;
   desc1: string;
@@ -30,7 +31,7 @@ const PAGE_SIZE = 10;
  */
 
 async function getMean(pageCurrent = 1, type_ = '00') {
-  return request<Mean[]>('getMean.php', {
+  return request<API.Basis<Mean[]>>('/Mean/getMean.php', {
     skipErrorHandler: true,
     method: 'get',
     params: {
@@ -41,14 +42,43 @@ async function getMean(pageCurrent = 1, type_ = '00') {
   });
 }
 
+/**
+ * 删除资料
+ */
+async function deleteMean(id: string | number) {
+  return request<API.Basis>('/Mean/deleteMean.php', {
+    skipErrorHandler: true,
+    method: 'get',
+    params: {
+      id,
+    },
+  });
+}
+
 const MeanInfo = () => {
   const [pageCurrent, setPageCurrent] = useState<number>(1);
   const [type, setType] = useState<string>('00');
+  const [meanData, setMeanData] = useState<Mean[]>();
 
-  const { data } = useRequest(() => getMean(pageCurrent, type), {
+  const { run: getRun } = useRequest(() => getMean(pageCurrent, type), {
     refreshDeps: [pageCurrent, type],
-    formatResult: (res) => {
-      return res;
+    onSuccess: ({ data, code, msg }) => {
+      if (code === 0) setMeanData(data);
+      else {
+        message.error(msg);
+      }
+    },
+  });
+
+  const { run: deleteRun } = useRequest(deleteMean, {
+    manual: true,
+    onSuccess: ({ code, msg }) => {
+      if (code === 0) {
+        getRun();
+        message.success(`delete ${msg}`);
+        return;
+      }
+      message.error(msg);
     },
   });
 
@@ -59,6 +89,17 @@ const MeanInfo = () => {
   const onSearch = (text: string) => {
     setPageCurrent(1);
     setType(text === '' ? '00' : text);
+  };
+
+  const handleDelete = (key: React.Key) => {
+    if (meanData) {
+      const { id } = meanData?.filter((item) => {
+        return item.id === key;
+      })[0];
+      deleteRun(id);
+    } else {
+      console.log('删除错误');
+    }
   };
 
   const columns: Columns[] = [
@@ -109,10 +150,10 @@ const MeanInfo = () => {
     {
       title: '操作',
       key: 'action',
-      render: () => (
-        <Space size="middle">
-          <Button type="default">删除</Button>
-        </Space>
+      render: (_: any, record: { key: React.Key }) => (
+        <Popconfirm title="确定删除?" onConfirm={() => handleDelete(record.key)}>
+          <Typography.Link>删除</Typography.Link>
+        </Popconfirm>
       ),
     },
   ];
@@ -131,10 +172,10 @@ const MeanInfo = () => {
         />
         <Table
           columns={columns}
-          dataSource={data ?? []}
+          dataSource={meanData ?? []}
           pagination={{
             onChange: ChangePage,
-            total: data?.[0]?.allCount ?? 0,
+            total: meanData?.[0]?.allCount ?? 0,
             pageSize: PAGE_SIZE,
             current: pageCurrent,
           }}

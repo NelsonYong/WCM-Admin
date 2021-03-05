@@ -27,7 +27,7 @@ type UserItem = {
 };
 
 async function getAllUser(pageCurrent = 1) {
-  return request<UserItem[]>('SearchAllUser.php', {
+  return request<UserItem[]>('/User/SearchAllUser.php', {
     skipErrorHandler: true,
     method: 'get',
     params: {
@@ -140,7 +140,7 @@ const EditableTable = () => {
     {
       title: '账号',
       dataIndex: 'userid',
-      editable: true,
+      editable: false,
     },
     {
       title: '密码',

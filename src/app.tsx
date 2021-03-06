@@ -116,7 +116,7 @@ const errorHandler = (error: ResponseError) => {
 
 // https://umijs.org/zh-CN/plugins/plugin-request
 export const request: RequestConfig = {
-  prefix: '/BlogAdmin/Data/',
+  prefix: '/BlogAdmin/Data',
   // requestInterceptors: [
   //   (url, options) => {
   //     // const appId = 'bic';

@@ -7,7 +7,7 @@
  */
 export default {
   dev: {
-    '/BlogAdmin/Data': {
+    '/BlogAdmin/Data/': {
       target: 'http://49.234.86.61:8000',
       changeOrigin: true,
       pathRewrite: { '^': '' },

@@ -9,6 +9,7 @@ import {
   Button,
   Space,
   Divider,
+  message,
 } from 'antd';
 import { request } from 'umi';
 import { useRequest } from 'ahooks';
@@ -26,6 +27,19 @@ type UserItem = {
   allCount: number;
 };
 
+interface EditableCellProps extends React.HTMLAttributes<HTMLElement> {
+  editing: boolean;
+  dataIndex: string;
+  title: any;
+  inputType: 'number' | 'text';
+  record: UserItem;
+  index: number;
+  children: React.ReactNode;
+}
+
+/**
+ * 获取用户
+ */
 async function getAllUser(pageCurrent = 1) {
   return request<UserItem[]>('/User/SearchAllUser.php', {
     skipErrorHandler: true,
@@ -36,16 +50,34 @@ async function getAllUser(pageCurrent = 1) {
     },
   });
 }
-const originData: UserItem[] = [];
-interface EditableCellProps extends React.HTMLAttributes<HTMLElement> {
-  editing: boolean;
-  dataIndex: string;
-  title: any;
-  inputType: 'number' | 'text';
-  record: UserItem;
-  index: number;
-  children: React.ReactNode;
+
+/**
+ * 删除用户
+ */
+async function deleteUser(id: string | number) {
+  return request<API.Basis>('/User/deleteUser.php', {
+    skipErrorHandler: true,
+    method: 'get',
+    params: {
+      id,
+    },
+  });
 }
+
+/**
+ * 修改用户
+ */
+async function editUser(info: Omit<UserItem, "key"|"password"|"allCount">) {
+  return request<API.Basis>('/User/deleteUser.php', {
+    skipErrorHandler: true,
+    method: 'post',
+    params: {
+      ...info,
+    },
+  });
+}
+
+const originData: UserItem[] = [];
 
 const EditableCell: React.FC<EditableCellProps> = ({
   editing,
@@ -81,17 +113,40 @@ const EditableCell: React.FC<EditableCellProps> = ({
   );
 };
 
-const EditableTable = () => {
+const UserInfoTable = () => {
   const [form] = Form.useForm();
   const [data, setData] = useState(originData);
   const [editingKey, setEditingKey] = useState('');
   const [pageCurrent, setPageCurrent] = useState(1);
 
-  useRequest(() => getAllUser(pageCurrent), {
+  const { run: getRun } = useRequest(() => getAllUser(pageCurrent), {
     refreshDeps: [pageCurrent],
     formatResult: (res) => {
       setData(res);
       return res;
+    },
+  });
+
+  const { run: deleteRun } = useRequest(deleteUser, {
+    manual: true,
+    formatResult: ({ code, msg }) => {
+      if (code === 0) {
+        getRun();
+        message.success(msg);
+      } else message.error(msg);
+    },
+  });
+
+  const { run: editRun } = useRequest(editUser, {
+    manual: true,
+    formatResult: ({ code, msg }): number => {
+      if (code === 0) {
+        getRun();
+        message.success(msg);
+        return 0;
+      }
+      message.error(msg);
+      return -1;
     },
   });
 
@@ -100,6 +155,14 @@ const EditableTable = () => {
   const edit = (record: Partial<UserItem> & { key: React.Key }) => {
     form.setFieldsValue({ name: '', age: '', address: '', ...record });
     setEditingKey(record.key);
+  };
+
+  const handleDelete = (id: number | string) => {
+    if (data) {
+      deleteRun(id);
+    } else {
+      console.log('删除错误');
+    }
   };
 
   const cancel = () => {
@@ -117,15 +180,19 @@ const EditableTable = () => {
       const index = newData.findIndex((item) => key === item.key);
       if (index > -1) {
         const item = newData[index];
-        console.log(item);
-
         newData.splice(index, 1, {
           ...item,
           ...row,
         });
-
-        setData(newData);
-        setEditingKey('');
+        const { userid, username, sex, age, skill } = item;
+        editRun({ userid, username, sex, age, skill }).then((res) => {
+          if (res === 0) {
+            setData(newData);
+            setEditingKey('');
+          } else {
+            message.error('修改失败');
+          }
+        });
       } else {
         newData.push(row);
         setData(newData);
@@ -145,7 +212,7 @@ const EditableTable = () => {
     {
       title: '密码',
       dataIndex: 'password',
-      editable: true,
+      editable: false,
     },
     {
       title: '姓名',
@@ -160,7 +227,7 @@ const EditableTable = () => {
     {
       title: '年龄',
       dataIndex: 'age',
-      defaultSortOrder: 'descend',
+      // defaultSortOrder: 'descend',
       sorter: (a: UserItem, b: UserItem) => a.age - b.age,
       editable: true,
     },
@@ -174,6 +241,7 @@ const EditableTable = () => {
       title: '操作',
       width: '10%',
       dataIndex: 'operation',
+
       render: (_: any, record: UserItem) => {
         const editable = isEditing(record);
         return editable ? (
@@ -190,9 +258,9 @@ const EditableTable = () => {
             <Typography.Link disabled={editingKey !== ''} onClick={() => edit(record)}>
               编辑
             </Typography.Link>
-            <Typography.Link disabled={editingKey !== ''} onClick={() => edit(record)}>
-              删除
-            </Typography.Link>
+            <Popconfirm title="确定删除?" onConfirm={() => handleDelete(record.key)}>
+              <Typography.Link>删除</Typography.Link>
+            </Popconfirm>
           </Space>
         );
       },
@@ -239,4 +307,4 @@ const EditableTable = () => {
   );
 };
 
-export default EditableTable;
+export default UserInfoTable;

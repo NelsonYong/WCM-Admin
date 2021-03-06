@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Space, Divider, Typography } from 'antd';
+import { Table,  Typography, Popconfirm, message } from 'antd';
 import { request } from 'umi';
 import { useRequest } from 'ahooks';
 import { NoToBase64 } from '@/common/utils';
@@ -37,9 +37,24 @@ async function getComment(pageCurrent = 1) {
   });
 }
 
+/**
+ * 删除评论
+ */
+async function deleteMainComment(id: string | number) {
+  return request<API.Basis>('/Comment/deleteMainComment.php', {
+    skipErrorHandler: true,
+    method: 'get',
+    params: {
+      id,
+    },
+  });
+}
+
 const MainCom = () => {
   const [pageCurrent, setPageCurrent] = useState<number>(1);
-  const { data } = useRequest(() => getComment(pageCurrent), {
+  const [comData, setComData] = useState<MainComment[]>();
+
+  const { run: getRun } = useRequest(() => getComment(pageCurrent), {
     refreshDeps: [pageCurrent],
     formatResult: (res) => {
       const arr = res.map((item) => {
@@ -48,9 +63,28 @@ const MainCom = () => {
           comment: NoToBase64(item.comment),
         };
       });
+      setComData(arr);
       return arr;
     },
   });
+
+  const { run: deleteRun } = useRequest(deleteMainComment, {
+    manual: true,
+    formatResult: ({ code, msg }) => {
+      if (code === 0) {
+        getRun();
+        message.success(msg);
+      } else message.error(msg);
+    },
+  });
+
+  const handleDelete = (id: string | number) => {
+    if (comData) {
+      deleteRun(id);
+    } else {
+      console.log('删除错误');
+    }
+  };
 
   const ChangePage = (page: number) => {
     setPageCurrent(page);
@@ -85,21 +119,21 @@ const MainCom = () => {
     {
       title: '操作',
       key: 'action',
-      render: () => (
-        <Space split={<Divider type="vertical" />} size="middle">
+      render: (_: any, record: MainComment) => (
+        <Popconfirm title="确定删除?" onConfirm={() => handleDelete(record.cid)}>
           <Typography.Link>删除</Typography.Link>
-        </Space>
-      ),
+        </Popconfirm>
+      )
     },
   ];
   return (
     <div>
       <Table
         columns={columns}
-        dataSource={data ?? []}
+        dataSource={comData ?? []}
         pagination={{
           onChange: ChangePage,
-          total: data?.[0]?.allCount ?? 0,
+          total: comData?.[0]?.allCount ?? 0,
           pageSize: PAGE_SIZE,
           current: pageCurrent,
         }}

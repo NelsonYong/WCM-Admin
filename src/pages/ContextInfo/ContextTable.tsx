@@ -37,7 +37,7 @@ async function getContext(pageCurrent = 1) {
  * 删除文章
  */
 async function deleteContext(id: string | number) {
-  return request<API.Basis>('/Mean/deleteContext.php', {
+  return request<API.Basis>('/Context/deleteText.php', {
     skipErrorHandler: true,
     method: 'get',
     params: {
@@ -60,6 +60,7 @@ export default function UserTable() {
   });
 
   const { run: deleteRun } = useRequest(deleteContext, {
+    manual:true,
     formatResult: ({ code, msg }) => {
       if (code === 0) {
         getRun();
